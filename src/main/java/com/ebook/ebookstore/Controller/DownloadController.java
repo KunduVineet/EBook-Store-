@@ -47,7 +47,7 @@ public class DownloadController {
             Resource file = downloadServices.getDownloadFile(downloadId);
             String filename = downloadServices.getFilename(downloadId);
 
-            return ResponseEntity.ok()
+            return ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=\"" + filename + "\"")
