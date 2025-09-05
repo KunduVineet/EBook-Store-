@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "books")
 @AllArgsConstructor
@@ -40,6 +43,12 @@ public class Books {
     @Column(name = "download_url")
     private String downloadUrl;
 
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Download> downloads = new ArrayList<>();
+
+    public List<Download> getDownloads() {
+        return downloads;
+    }
 
     public Books() {}
 

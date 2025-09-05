@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
+
 @RestController
 @RequestMapping("/api/books")
 @CrossOrigin(origins = "*")
@@ -79,14 +82,14 @@ public class BookController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String subcategory) {
         List<BookDTO> books = bookServices.searchBooks(author, category, subcategory);
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @PostMapping("/createBook")
     public ResponseEntity<BookDTO> createBook(@Valid @RequestBody CreateBookDTO createBookDTO) {
         try {
             BookDTO createdBook = bookServices.createBook(createBookDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
+            return status(HttpStatus.CREATED).body(createdBook);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
