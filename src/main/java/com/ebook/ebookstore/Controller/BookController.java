@@ -103,8 +103,6 @@ public class BookController {
         }
     }
 
-
-
     @PutMapping("/{id}")
     public ResponseEntity<BookDTO> updateBook(@PathVariable Long id,
                                               @Valid @RequestBody CreateBookDTO createBookDTO) {

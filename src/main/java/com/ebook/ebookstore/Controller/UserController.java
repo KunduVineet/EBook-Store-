@@ -184,4 +184,21 @@ public class UserController {
                     .body("Error deleting user: " + e.getMessage());
         }
     }
+
+    // --- NEW ENDPOINT FOR ADMIN PANEL ---
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers(HttpSession session) {
+        // Basic check to see if a user is logged in. In a real app, you'd check for an admin role.
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return status(HttpStatus.UNAUTHORIZED).body("You must be logged in to view users.");
+        }
+
+        try {
+            List<User> users = userService.getAllUsers();
+            return ok(users);
+        } catch (Exception e) {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not retrieve users.");
+        }
+    }
 }
