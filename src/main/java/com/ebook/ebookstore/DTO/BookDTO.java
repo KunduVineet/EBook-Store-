@@ -2,7 +2,9 @@ package com.ebook.ebookstore.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class BookDTO {
     private Long id;
 

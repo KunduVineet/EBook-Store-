@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserServices {
 
     @Override
     public User createUser(UserDTO userDTO) {
-        if(userRepository.existsByName(userDTO.getUsername())){
+        if(userRepository.existsByName(userDTO.getName())){
             throw new IllegalArgumentException("Username already exists");
         }
         if(userRepository.existsByEmail(userDTO.getEmail())){
@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserServices {
         }
 
         User user = new User();
-        user.setName(userDTO.getUsername());
+        user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
         return userRepository.save(user);
@@ -47,8 +47,8 @@ public class UserServiceImpl implements UserServices {
                 .orElseThrow(()-> new EntityNotFoundException("User with id " + userId + " not found"));
 
         // Fixed logic: should check if NOT blank, not if blank
-        if(userDTO.getUsername() != null && !userDTO.getUsername().isBlank()){
-            user.setName(userDTO.getUsername());
+        if(userDTO.getName() != null && !userDTO.getName().isBlank()){
+            user.setName(userDTO.getName());
         }
 
         if(userDTO.getEmail() != null && !userDTO.getEmail().isBlank()){

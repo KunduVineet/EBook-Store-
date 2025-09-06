@@ -13,9 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
+import static org.springframework.web.servlet.function.ServerResponse.badRequest;
+import static org.springframework.web.servlet.function.ServerResponse.notFound;
 
 @RestController
 @RequestMapping("/api/users")
@@ -45,13 +51,13 @@ public class UserController {
                     Math.toIntExact(createdUser.getId()),
                     createdUser.getName(),
                     createdUser.getEmail(),
-                    null // Exclude password
+                    createdUser.getPassword()
             );
-            return ResponseEntity.ok(responseDTO);
+            return ok(responseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error registering user: " + e.getMessage());
         }
     }
@@ -73,7 +79,7 @@ public class UserController {
             // Retrieve user details
             User user = userService.getUserByEmail(userLoginDTO.getEmail());
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                return status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("User not found after authentication");
             }
 
@@ -85,12 +91,12 @@ public class UserController {
                     Math.toIntExact(user.getId()),
                     user.getName(),
                     user.getEmail(),
-                    null // Exclude password
+                    user.getPassword()
             );
 
-            return ResponseEntity.ok(userDTO);
+            return ok(userDTO);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            return status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
     }
 
@@ -98,25 +104,23 @@ public class UserController {
     public ResponseEntity<?> home(HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in");
+            return status(HttpStatus.UNAUTHORIZED).body("Please log in");
         }
 
         Optional<User> userOptional = userService.getUserById(userId);
-        if (userOptional.isEmpty()) { // Fixed: handle Optional properly
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-        }
+        // Fixed: handle Optional properly
+        return userOptional.map(user -> ok("Welcome, " + user.getName())).orElseGet(() -> status(HttpStatus.UNAUTHORIZED).body("User not found"));
 
-        return ResponseEntity.ok("Welcome, " + userOptional.get().getName());
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.ok("No active session to logout");
+            return ok("No active session to logout");
         }
         session.invalidate();
-        return ResponseEntity.ok("Logged out successfully");
+        return ok("Logged out successfully");
     }
 
     @PutMapping("/update/{userId}")
@@ -135,7 +139,7 @@ public class UserController {
         // Authorization check
         Integer sessionUserId = (Integer) session.getAttribute("userId");
         if (sessionUserId == null || !sessionUserId.equals(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return status(HttpStatus.UNAUTHORIZED)
                     .body("Unauthorized to update this user");
         }
 
@@ -148,13 +152,13 @@ public class UserController {
                     updatedUser.getEmail(),
                     null // Exclude password
             );
-            return ResponseEntity.ok(responseDTO);
+            return ok(responseDTO);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return (ResponseEntity<?>) badRequest().body(e.getMessage());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error updating user: " + e.getMessage());
         }
     }
@@ -164,7 +168,7 @@ public class UserController {
         // Authorization check
         Integer sessionUserId = (Integer) session.getAttribute("userId");
         if (sessionUserId == null || !sessionUserId.equals(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return status(HttpStatus.UNAUTHORIZED)
                     .body("Unauthorized to delete this user");
         }
 
@@ -172,11 +176,11 @@ public class UserController {
             userService.deleteUser(userId);
             // Invalidate session after deleting user
             session.invalidate();
-            return ResponseEntity.ok("User deleted successfully");
+            return ok("User deleted successfully");
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return (ResponseEntity<?>) notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error deleting user: " + e.getMessage());
         }
     }

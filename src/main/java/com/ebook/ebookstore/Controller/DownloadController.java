@@ -6,12 +6,10 @@ import com.ebook.ebookstore.Services.DownloadServices;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -19,7 +17,6 @@ import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @RequestMapping("/api/downloads")
-@CrossOrigin(origins = "*")
 public class DownloadController {
 
     private final DownloadServices downloadServices;
@@ -47,10 +44,14 @@ public class DownloadController {
             Resource file = downloadServices.getDownloadFile(downloadId);
             String filename = downloadServices.getFilename(downloadId);
 
+            // Build safe content disposition
+            ContentDisposition contentDisposition = ContentDisposition.attachment()
+                    .filename(filename, StandardCharsets.UTF_8) // handles encoding safely
+                    .build();
+
             return ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                     .body(file);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

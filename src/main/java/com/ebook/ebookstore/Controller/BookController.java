@@ -9,17 +9,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import java.util.List;
 
-import static org.springframework.http.ResponseEntity.ok;
-import static org.springframework.http.ResponseEntity.status;
+import static org.springframework.http.ResponseEntity.*;
 
 @RestController
 @RequestMapping("/api/books")
-@CrossOrigin(origins = "*")
 public class BookController {
 
     private final BookServices bookServices;
+
+    private static final Logger logger = LoggerFactory.getLogger(BookController.class);
+
 
     @Autowired
     public BookController(BookServices bookServices) {
@@ -29,16 +34,16 @@ public class BookController {
     @GetMapping
     public ResponseEntity<List<BookDTO>> getAllBooks() {
         List<BookDTO> books = bookServices.getAllBooks();
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
         try {
             BookDTO book = bookServices.getBookById(id);
-            return ResponseEntity.ok(book);
+            return ok(book);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return notFound().build();
         }
     }
 
@@ -46,34 +51,34 @@ public class BookController {
     public ResponseEntity<BookDTO> getBookByCode(@PathVariable String code) {
         try {
             BookDTO book = bookServices.getBookByCode(code);
-            return ResponseEntity.ok(book);
+            return ok(book);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return notFound().build();
         }
     }
 
     @GetMapping("/author/{author}")
     public ResponseEntity<List<BookDTO>> getBooksByAuthor(@PathVariable String author) {
         List<BookDTO> books = bookServices.getBooksByAuthor(author);
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @GetMapping("/name/{name}")
     public ResponseEntity<List<BookDTO>> getBooksByName(@PathVariable String name) {
         List<BookDTO> books = bookServices.getBooksByName(name);
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @GetMapping("/category/{category}")
     public ResponseEntity<List<BookDTO>> getBooksByCategory(@PathVariable String category) {
         List<BookDTO> books = bookServices.getBooksByCategory(category);
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @GetMapping("/subcategory/{subcategory}")
     public ResponseEntity<List<BookDTO>> getBooksBySubcategory(@PathVariable String subcategory) {
         List<BookDTO> books = bookServices.getBooksBySubcategory(subcategory);
-        return ResponseEntity.ok(books);
+        return ok(books);
     }
 
     @GetMapping("/search")
@@ -85,24 +90,29 @@ public class BookController {
         return ok(books);
     }
 
-    @PostMapping("/createBook")
+    @PostMapping(value = "/createBook", consumes = "application/json", produces = "application/json")
     public ResponseEntity<BookDTO> createBook(@Valid @RequestBody CreateBookDTO createBookDTO) {
+        logger.info("Received createBook request: {}", createBookDTO);
         try {
             BookDTO createdBook = bookServices.createBook(createBookDTO);
-            return status(HttpStatus.CREATED).body(createdBook);
+            logger.info("Book created successfully: {}", createdBook);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
         } catch (RuntimeException e) {
+            logger.error("Error creating book", e);
             return ResponseEntity.badRequest().build();
         }
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<BookDTO> updateBook(@PathVariable Long id,
                                               @Valid @RequestBody CreateBookDTO createBookDTO) {
         try {
             BookDTO updatedBook = bookServices.updateBook(id, createBookDTO);
-            return ResponseEntity.ok(updatedBook);
+            return ok(updatedBook);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return notFound().build();
         }
     }
 
@@ -110,21 +120,21 @@ public class BookController {
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         try {
             bookServices.deleteBook(id);
-            return ResponseEntity.noContent().build();
+            return noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return notFound().build();
         }
     }
 
     @GetMapping("/exists/{id}")
     public ResponseEntity<Boolean> existsBookById(@PathVariable Long id) {
         boolean exists = bookServices.existsBookById(id);
-        return ResponseEntity.ok(exists);
+        return ok(exists);
     }
 
     @GetMapping("/exists/code/{code}")
     public ResponseEntity<Boolean> existsBookByCode(@PathVariable String code) {
         boolean exists = bookServices.existsBookByCode(code);
-        return ResponseEntity.ok(exists);
+        return ok(exists);
     }
 }

@@ -46,10 +46,6 @@ public class Books {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Download> downloads = new ArrayList<>();
 
-    public List<Download> getDownloads() {
-        return downloads;
-    }
-
     public Books() {}
 
     public Books(String name, String code, String category, String subcategory,

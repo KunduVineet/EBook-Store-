@@ -1,17 +1,16 @@
 package com.ebook.ebookstore.DTO;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
+@Data
 public class CreateDownloadDTO {
     // Getters and Setters
-    @NotBlank(message = "Book ID is required")
+    @NotNull(message = "Book ID is required")
     private Long ebookId;
 
     @NotBlank(message = "Name is required")
